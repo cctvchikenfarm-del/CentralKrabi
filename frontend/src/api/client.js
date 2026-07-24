@@ -3,7 +3,11 @@
  * All API calls go through here. Handles auth errors and JSON parsing.
  */
 
-const BASE = import.meta.env.VITE_API_BASE || '/api';
+let rawBase = import.meta.env.VITE_API_BASE || '/api';
+if (rawBase.startsWith('http') && !rawBase.endsWith('/api')) {
+  rawBase = rawBase.replace(/\/+$/, '') + '/api';
+}
+const BASE = rawBase;
 
 class ApiError extends Error {
   constructor(message, status) {

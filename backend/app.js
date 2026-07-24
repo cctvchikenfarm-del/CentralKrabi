@@ -39,6 +39,7 @@ app.use(cookieParser());
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes); // Fallback alias for direct /auth requests
 app.use('/api', entriesRoutes);
 app.use('/api', dashboardRoutes);
 app.use('/api', analyticsRoutes);
@@ -48,14 +49,16 @@ app.use('/api', usersRoutes);
 app.use('/api', adminRoutes);
 
 // ── Health ────────────────────────────────────────────────────────────────────
-app.get('/api/health', (_req, res) => {
+const healthHandler = (_req, res) => {
   res.json({
     status: 'ok',
     version: '4.0.0',
     release: 'CKAP_v4.0_GREENFIELD',
     timestamp: new Date().toISOString(),
   });
-});
+};
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use(errorHandler);
