@@ -56,37 +56,40 @@ export function DataEntryPage() {
     <>
       <PageHeader
         title="ระบบบันทึกข้อมูลและทรัพยากร"
-        subtitle={thaiMonthLabel(period)}
-        actions={
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        subtitle={`ประจำเดือน ${thaiMonthLabel(period)}`}
+      />
+
+      <div className="page-content">
+        {/* Module Selector & Month Filter Bar */}
+        <div className="flex-between mb-4" style={{ flexWrap: 'wrap', gap: 'var(--space-3)', background: 'var(--surface-card)', padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto' }}>
+            {MODULE_ORDER.map(mod => (
+              <button
+                key={mod}
+                type="button"
+                className={`btn ${selectedModule === mod ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSelectedModule(mod)}
+              >
+                {MODULE_LABELS[mod] || mod}
+                {mod === 'wet_waste' && <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>(คำนวณ)</span>}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--text-secondary)' }}>📅 เลือกเดือนรายงาน:</span>
             <ThaiMonthPicker
               value={period}
               onChange={val => setPeriod(val)}
             />
           </div>
-        }
-      />
-
-      <div className="page-content">
-        {/* Module Selector Pills */}
-        <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          {MODULE_ORDER.map(mod => (
-            <button
-              key={mod}
-              type="button"
-              className={`btn ${selectedModule === mod ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setSelectedModule(mod)}
-            >
-              {MODULE_LABELS[mod] || mod}
-              {mod === 'wet_waste' && <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>(คำนวณ)</span>}
-            </button>
-          ))}
         </div>
 
         {/* ── Pattern 1: Dual-Mode Switcher Card (ขยะ RDF) ──────────────────── */}
         {selectedModule === 'rdf' && (
           <RdfDualModeCard
             period={period}
+            onPeriodChange={setPeriod}
             monthEntriesData={monthEntriesData}
             monthLoading={monthLoading}
             deleteMutation={deleteMutation}
@@ -97,6 +100,7 @@ export function DataEntryPage() {
         {selectedModule === 'dog_food' && (
           <DogFoodDualModeCard
             period={period}
+            onPeriodChange={setPeriod}
             monthEntriesData={monthEntriesData}
             monthLoading={monthLoading}
             deleteMutation={deleteMutation}
@@ -107,6 +111,7 @@ export function DataEntryPage() {
         {selectedModule === 'pig_feed' && (
           <PigFeedFormulaCard
             period={period}
+            onPeriodChange={setPeriod}
             monthEntriesData={monthEntriesData}
           />
         )}
@@ -115,6 +120,7 @@ export function DataEntryPage() {
         {selectedModule === 'wet_waste' && (
           <WetWasteBreakdownCard
             period={period}
+            onPeriodChange={setPeriod}
             dashboardData={dashboardData}
           />
         )}
@@ -123,6 +129,7 @@ export function DataEntryPage() {
         {selectedModule === 'tissue' && (
           <TissueDualModeGridCard
             period={period}
+            onPeriodChange={setPeriod}
             categories={categories}
             monthEntriesData={monthEntriesData}
           />
@@ -132,6 +139,7 @@ export function DataEntryPage() {
         {selectedModule === 'black_bag' && (
           <BlackBagFixedTableCard
             period={period}
+            onPeriodChange={setPeriod}
             monthEntriesData={monthEntriesData}
           />
         )}
@@ -140,6 +148,7 @@ export function DataEntryPage() {
         {selectedModule === 'consumable' && (
           <ConsumablesFixedTableCard
             period={period}
+            onPeriodChange={setPeriod}
             categories={categories}
             monthEntriesData={monthEntriesData}
           />
@@ -149,6 +158,7 @@ export function DataEntryPage() {
         {selectedModule === 'recycle' && (
           <RecyclePrepopulatedCard
             period={period}
+            onPeriodChange={setPeriod}
             categories={categories}
             monthEntriesData={monthEntriesData}
             deleteMutation={deleteMutation}
@@ -160,7 +170,7 @@ export function DataEntryPage() {
 }
 
 // ── Pattern 1 Component: RDF Dual-Mode Switcher Card ─────────────────────────
-function RdfDualModeCard({ period, monthEntriesData, monthLoading, deleteMutation }) {
+function RdfDualModeCard({ period, onPeriodChange, monthEntriesData, monthLoading, deleteMutation }) {
   const qc = useQueryClient()
   const [isDailyMode, setIsDailyMode] = useState(false)
   const [directTotal, setDirectTotal] = useState('')
@@ -244,9 +254,9 @@ function RdfDualModeCard({ period, monthEntriesData, monthLoading, deleteMutatio
   return (
     <div className="card" style={{ maxWidth: 900, margin: '0 auto' }}>
       <div className="card-header flex-between">
-        <div>
-          <h2 className="card-title">บันทึกขยะ RDF — ประจำเดือน {thaiMonthLabel(period)}</h2>
-          <span className="text-xs text-secondary">โหมดบันทึกขยะ RDF ประจำเดือน</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>บันทึกขยะ RDF — ประจำเดือน</h2>
+          <ThaiMonthPicker value={period} onChange={onPeriodChange} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--gray-100)', padding: '6px 12px', borderRadius: 'var(--radius-full)' }}>
           <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-secondary)' }}>
@@ -340,7 +350,7 @@ function RdfDualModeCard({ period, monthEntriesData, monthLoading, deleteMutatio
 }
 
 // ── Pattern 1 Component: Dog Food Dual-Mode Switcher Card (เหมือน RDF) ─────────────
-function DogFoodDualModeCard({ period, monthEntriesData, monthLoading, deleteMutation }) {
+function DogFoodDualModeCard({ period, onPeriodChange, monthEntriesData, monthLoading, deleteMutation }) {
   const qc = useQueryClient()
   const [isDailyMode, setIsDailyMode] = useState(false)
   const [directTotal, setDirectTotal] = useState('')
@@ -424,9 +434,9 @@ function DogFoodDualModeCard({ period, monthEntriesData, monthLoading, deleteMut
   return (
     <div className="card" style={{ maxWidth: 900, margin: '0 auto' }}>
       <div className="card-header flex-between">
-        <div>
-          <h2 className="card-title">บันทึกอาหารสุนัข — ประจำเดือน {thaiMonthLabel(period)}</h2>
-          <span className="text-xs text-secondary">ยอดนำไปรวมเป็นส่วนหนึ่งของขยะเปียกอัตโนมัติ</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>บันทึกอาหารสุนัข — ประจำเดือน</h2>
+          <ThaiMonthPicker value={period} onChange={onPeriodChange} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--gray-100)', padding: '6px 12px', borderRadius: 'var(--radius-full)' }}>
           <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-secondary)' }}>
@@ -520,7 +530,7 @@ function DogFoodDualModeCard({ period, monthEntriesData, monthLoading, deleteMut
 }
 
 // ── Pattern 4 Component: Pig Feed Formula Card ───────────────────────────────
-function PigFeedFormulaCard({ period, monthEntriesData }) {
+function PigFeedFormulaCard({ period, onPeriodChange, monthEntriesData }) {
   const qc = useQueryClient()
   const totalDays = daysInPeriodMonth(period)
   const [dailyAvg, setDailyAvg] = useState('')
@@ -570,8 +580,11 @@ function PigFeedFormulaCard({ period, monthEntriesData }) {
 
   return (
     <div className="card" style={{ maxWidth: 650, margin: '0 auto' }}>
-      <div className="card-header">
-        <h2 className="card-title">บันทึกอาหารหมู — ประจำเดือน {thaiMonthLabel(period)}</h2>
+      <div className="card-header flex-between">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>บันทึกอาหารหมู — ประจำเดือน</h2>
+          <ThaiMonthPicker value={period} onChange={onPeriodChange} />
+        </div>
         <span className="badge badge-blue">รายเดือน</span>
       </div>
       <div className="card-body">
@@ -621,14 +634,17 @@ function PigFeedFormulaCard({ period, monthEntriesData }) {
 }
 
 // ── Pattern 4 Component: Wet Waste Breakdown Card ───────────────────────────
-function WetWasteBreakdownCard({ period, dashboardData }) {
+function WetWasteBreakdownCard({ period, onPeriodChange, dashboardData }) {
   const wetMod = dashboardData?.modules?.find(m => m.module === 'wet_waste')
   const breakdown = wetMod?.wet_waste_breakdown || { dog_food_actual: 0, pig_feed_estimated: 0, total_wet_waste: 0 }
 
   return (
     <div className="card" style={{ maxWidth: 700, margin: '0 auto' }}>
-      <div className="card-header">
-        <h2 className="card-title">สรุปการคำนวณขยะเปียก — ประจำเดือน {thaiMonthLabel(period)}</h2>
+      <div className="card-header flex-between">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>สรุปการคำนวณขยะเปียก — ประจำเดือน</h2>
+          <ThaiMonthPicker value={period} onChange={onPeriodChange} />
+        </div>
         <span className="badge badge-yellow">การ์ดคำนวณอัตโนมัติ</span>
       </div>
       <div className="card-body">
@@ -663,7 +679,7 @@ function WetWasteBreakdownCard({ period, dashboardData }) {
 }
 
 // ── Pattern 1 Component: Tissue Dual-Mode Grid Card ─────────────────────────
-function TissueDualModeGridCard({ period, categories, monthEntriesData }) {
+function TissueDualModeGridCard({ period, onPeriodChange, categories, monthEntriesData }) {
   const qc = useQueryClient()
   const totalDays = daysInPeriodMonth(period)
   const [yStr, mStr] = period.split('-')
@@ -731,9 +747,9 @@ function TissueDualModeGridCard({ period, categories, monthEntriesData }) {
   return (
     <div className="card">
       <div className="card-header flex-between">
-        <div>
-          <h2 className="card-title">ตารางบันทึกกระดาษทิชชู่ (Spreadsheet Grid) — {thaiMonthLabel(period)}</h2>
-          <span className="text-xs text-secondary">ช่องว่าง = ยังไม่เปิดตรวจ | 0 = ตรวจแล้วแต่ไม่มีการใช้</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <h2 className="card-title" style={{ margin: 0 }}>ตารางบันทึกกระดาษทิชชู่ (Spreadsheet Grid) — ประจำเดือน</h2>
+          <ThaiMonthPicker value={period} onChange={onPeriodChange} />
         </div>
         <button
           type="button"
