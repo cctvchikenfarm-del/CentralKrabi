@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { imports } from '../../api/index.js'
 import PageHeader from '../../components/layout/PageHeader.jsx'
 import { currentPeriodMonth, thaiMonthLabel } from '../../lib/periods.js'
@@ -20,6 +20,28 @@ export function RecycleVoucherImportPage() {
   const [parsedResult, setParsedResult] = useState(null)
   const [items, setItems] = useState([])
   const [successMessage, setSuccessMessage] = useState(null)
+  const [batches, setBatches] = useState([])
+  const [relocatingId, setRelocatingId] = useState(null)
+  const [targetRelocateMonth, setTargetRelocateMonth] = useState('')
+
+  // Detected document month from OCR / Voucher Number (e.g. PV2606... -> 2026-06, PV2607... -> 2026-07)
+  const detectedDocMonth = parsedResult?.voucher_number?.startsWith('PV2606') ? '2026-06'
+    : parsedResult?.voucher_number?.startsWith('PV2607') ? '2026-07'
+    : null;
+  const isMonthMismatch = detectedDocMonth && detectedDocMonth !== period;
+
+  const loadBatches = async () => {
+    try {
+      const res = await imports.batchList()
+      setBatches(res.batches || [])
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
+    loadBatches()
+  }, [])
 
   function handleFileSelect(e) {
     const selected = e.target.files[0]
@@ -94,10 +116,23 @@ export function RecycleVoucherImportPage() {
       setParsedResult(null)
       setFile(null)
       setFilePreviewUrl(null)
+      loadBatches()
     } catch (err) {
       alert(`เกิดข้อผิดพลาดในการบันทึก: ${err.message}`)
     } finally {
       setConfirming(false)
+    }
+  }
+
+  async function handleRelocateBatch(batchId, newMonth) {
+    if (!newMonth) return;
+    try {
+      const res = await imports.batchRelocate(batchId, { target_period_month: newMonth })
+      alert(`✅ ${res.message}`)
+      setRelocatingId(null)
+      loadBatches()
+    } catch (e) {
+      alert(`เกิดข้อผิดพลาดในการย้ายเดือน: ${e.message}`)
     }
   }
 
@@ -152,6 +187,23 @@ export function RecycleVoucherImportPage() {
         {successMessage && (
           <div className="alert alert-success mb-6">
             ✅ {successMessage}
+          </div>
+        )}
+
+        {/* Month Mismatch Warning Alert */}
+        {isMonthMismatch && (
+          <div className="alert alert-warning mb-6 flex-between" style={{ background: '#fff7ed', borderColor: '#fdba74', color: '#c2410c' }}>
+            <div>
+              <strong>⚠️ แจ้งเตือนเดือนเอกสารไม่ตรงกัน:</strong> เอกสารใบสำคัญจ่ายนี้เป็นของเดือน <strong>{thaiMonthLabel(detectedDocMonth)}</strong> แต่คุณกำลังเลือกเดือนรายงานเป็น <strong>{thaiMonthLabel(period)}</strong>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{ background: '#ea580c', color: '#ffffff', fontWeight: 'bold', border: 'none' }}
+              onClick={() => setPeriod(detectedDocMonth)}
+            >
+              🔄 สลับเป็นเดือน {thaiMonthLabel(detectedDocMonth)} อัตโนมัติ
+            </button>
           </div>
         )}
 
@@ -284,13 +336,110 @@ export function RecycleVoucherImportPage() {
                     onClick={handleConfirmImport}
                     disabled={confirming || reviewCount > 0}
                   >
-                    {confirming ? 'กำลังบันทึกข้อมูล...' : `✅ ยืนยันบันทึกใบสำคัญจ่าย (${readyCount} รายการ)`}
+                    {confirming ? 'กำลังบันทึกข้อมูล...' : `✅ ยืนยันบันทึกเข้าเดือน [${thaiMonthLabel(period)}] (${readyCount} รายการ)`}
                   </button>
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {/* Batch Import History & Relocation Tool */}
+        <div className="card mt-6">
+          <div className="card-header flex-between">
+            <div>
+              <h3 className="card-title">📜 ประวัติชุดนำเข้าข้อมูล & เครื่องมือย้ายเดือน (Batch Relocation Tool)</h3>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)', marginTop: 2 }}>
+                หากบันทึกผิดเดือน สามารถกดปุ่ม "🔄 ย้ายเดือน" เพื่อเปลี่ยนเดือนประจำรายงานได้ทันทีใน 1 คลิก
+              </div>
+            </div>
+          </div>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div className="table-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>วันเวลาบันทึก</th>
+                    <th>ประเภทเอกสาร</th>
+                    <th>ชื่อไฟล์</th>
+                    <th>เดือนรายงาน</th>
+                    <th>จำนวนรายการ</th>
+                    <th>สถานะ</th>
+                    <th className="text-center">เครื่องมือจัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {batches.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-6 text-secondary">
+                        ยังไม่มีประวัติการนำเข้าข้อมูล
+                      </td>
+                    </tr>
+                  ) : (
+                    batches.map(b => (
+                      <tr key={b.id}>
+                        <td>{new Date(b.created_at).toLocaleString('th-TH')}</td>
+                        <td>
+                          <span className="badge badge-blue">{b.source_type}</span>
+                        </td>
+                        <td><strong>{b.original_filename}</strong></td>
+                        <td>
+                          <span className="badge badge-green" style={{ fontSize: 'var(--text-xs)' }}>
+                            📅 {thaiMonthLabel(b.period_month)}
+                          </span>
+                        </td>
+                        <td>{b.row_count_committed || b.row_count_preview} รายการ</td>
+                        <td>
+                          <span className={`badge ${b.status === 'committed' ? 'badge-green' : b.status === 'rolled_back' ? 'badge-gray' : 'badge-yellow'}`}>
+                            {b.status}
+                          </span>
+                        </td>
+                        <td className="text-center">
+                          {b.status === 'committed' && (
+                            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
+                              {relocatingId === b.id ? (
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                  <ThaiMonthPicker
+                                    value={targetRelocateMonth || b.period_month}
+                                    onChange={val => setTargetRelocateMonth(val)}
+                                  />
+                                  <button
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() => handleRelocateBatch(b.id, targetRelocateMonth || b.period_month)}
+                                  >
+                                    บันทึกย้าย
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-ghost"
+                                    onClick={() => setRelocatingId(null)}
+                                  >
+                                    ยกเลิก
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline"
+                                  style={{ color: '#d97706', borderColor: '#fcd34d' }}
+                                  onClick={() => {
+                                    setRelocatingId(b.id)
+                                    setTargetRelocateMonth(b.period_month)
+                                  }}
+                                >
+                                  🔄 ย้ายเดือน
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   )

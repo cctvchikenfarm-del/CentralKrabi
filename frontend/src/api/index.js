@@ -53,4 +53,5 @@ export const imports = {
   recycleVoucherConfirm: (body)     => api.post('/imports/recycle-voucher/confirm', body),
   batchList:             ()         => api.get('/imports/batches'),
   batchRollback:         (id)       => api.post(`/imports/batches/${id}/rollback`),
+  batchRelocate:         (id, body) => api.post(`/imports/batches/${id}/relocate`, body),
 }

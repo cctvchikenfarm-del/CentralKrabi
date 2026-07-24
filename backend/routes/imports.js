@@ -290,4 +290,50 @@ router.post('/imports/batches/:id/rollback', requirePermission('entries.import')
   } catch (err) { next(err); }
 });
 
+/**
+ * 7. Relocate Batch Import to Another Month
+ * POST /api/imports/batches/:id/relocate
+ */
+router.post('/imports/batches/:id/relocate', requirePermission('entries.import'), async (req, res, next) => {
+  try {
+    const batchId = req.params.id;
+    const { target_period_month } = req.body;
+
+    if (!target_period_month || !/^\d{4}-\d{2}$/.test(target_period_month.slice(0, 7))) {
+      return res.status(400).json({ error: 'กรุณาระบุเดือนเป้าหมายในรูปแบบ YYYY-MM' });
+    }
+
+    const newPeriod = target_period_month.slice(0, 7);
+    const newEntryDate = `${newPeriod}-01`;
+
+    // 1. Update data_entries
+    const { error: entryErr } = await supabase
+      .from('data_entries')
+      .update({
+        period_month: newEntryDate,
+        entry_date: newEntryDate,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('import_batch_id', batchId);
+
+    if (entryErr) throw entryErr;
+
+    // 2. Update import_batches
+    const { error: batchErr } = await supabase
+      .from('import_batches')
+      .update({
+        period_month: newPeriod,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', batchId);
+
+    if (batchErr) throw batchErr;
+
+    res.json({
+      success: true,
+      message: `ย้ายชุดข้อมูลนำเข้าเข้าสู่เดือน ${newPeriod} สำเร็จ`,
+    });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
