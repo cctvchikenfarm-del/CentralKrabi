@@ -18,10 +18,12 @@ class ApiError extends Error {
 
 async function request(path, options = {}) {
   const token = localStorage.getItem('access_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const isFormData = options.body instanceof FormData;
+
+  const headers = { ...options.headers };
+  if (!isFormData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
   if (token && !headers['Authorization']) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -30,7 +32,7 @@ async function request(path, options = {}) {
     ...options,
     credentials: 'include', // always send cookies
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
   });
 
   // Session expired — redirect to login if not already on /login or checking /auth/me
