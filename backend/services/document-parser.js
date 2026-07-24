@@ -92,16 +92,16 @@ const HANDWRITTEN_HEADER_RULES = [
 ];
 
 /**
- * Master Categories for Recycle Voucher Parsing
+ * Master Categories for Recycle Voucher Parsing (Smart Category Mapping)
  */
 const RECYCLE_CATEGORY_MAP = [
-  { keys: ['กระดาษน้ำตาล', 'กระดาษน ้าตาล', 'กระดาษลัง'], code: 'rc_brown_paper', name_th: 'กระดาษน้ำตาล' },
-  { keys: ['กระดาษจับจั้ว', 'จับจั้ว'], code: 'rc_jap_jua', name_th: 'กระดาษจับจั้ว' },
-  { keys: ['สังกะสีกระป๋อง', 'สังกะสี'], code: 'rc_tin_can', code2nd: 'rc_tin_can_2nd', name_th: 'สังกะสีกระป๋อง' },
-  { keys: ['pet', 'ขวด pet'], code: 'rc_pet', name_th: 'PET' },
-  { keys: ['พลาสติกรวม', 'พลาสติก', 'hdpe', 'แกนลอน', 'แกลลอน'], code: 'rc_plastic_mixed', code2nd: 'rc_plastic_mixed_2nd', name_th: 'พลาสติกรวม' },
-  { keys: ['อลู-โค๊ก', 'อลูโค๊ก', 'โค๊ก', 'อลูมิเนียม'], code: 'rc_alu_coke', name_th: 'อลู-โค๊ก' },
-  { keys: ['แก้ว-รวมสี', 'แก้วรวมสี', 'แก้วรวม', 'รวมสี'], code: 'rc_glass_mixed', name_th: 'แก้ว-รวมสี' },
+  { keys: ['กระดาษน้ำตาล', 'กระดาษน ้าตาล', 'กระดาษลัง', 'ลังกระดาษ', 'ลัง'], code: 'rc_brown_paper', name_th: 'กระดาษน้ำตาล' },
+  { keys: ['กระดาษจับจั้ว', 'จับจั้ว', 'กระดาษหนังสือพิมพ์', 'หนังสือพิมพ์', 'กระดาษขาวดำ', 'กระดาษเอกสาร', 'กระดาษรวม', 'สมุด', 'หนังสือ'], code: 'rc_jap_jua', name_th: 'กระดาษจับจั้ว' },
+  { keys: ['สังกะสีกระป๋อง', 'สังกะสี', 'เหล็ก', 'เหล็กกัลวาไนท์', 'เหล็กเส้น', 'กัลวาไนท์', 'กระป๋องสังกะสี', 'เหล็กรวม'], code: 'rc_tin_can', code2nd: 'rc_tin_can_2nd', name_th: 'สังกะสีกระป๋อง' },
+  { keys: ['pet', 'ขวด pet', 'ขวดใส', 'ขวดน้ำใส', 'พลาสติกใส'], code: 'rc_pet', name_th: 'PET' },
+  { keys: ['พลาสติกรวม', 'พลาสติก', 'hdpe', 'แกนลอน', 'แกลลอน', 'แกลลอนนม', 'ถุงพลาสติก', 'พลาสติกกรอบ'], code: 'rc_plastic_mixed', code2nd: 'rc_plastic_mixed_2nd', name_th: 'พลาสติกรวม' },
+  { keys: ['อลู-โค๊ก', 'อลูโค๊ก', 'โค๊ก', 'อลูมิเนียม', 'กระป๋องอลูมิเนียม', 'อลูมิเนียมกระป๋อง'], code: 'rc_alu_coke', name_th: 'อลู-โค๊ก' },
+  { keys: ['แก้ว-รวมสี', 'แก้วรวมสี', 'แก้วรวม', 'รวมสี', 'ขวดแก้ว', 'เศษแก้ว'], code: 'rc_glass_mixed', name_th: 'แก้ว-รวมสี' },
 ];
 
 /**
