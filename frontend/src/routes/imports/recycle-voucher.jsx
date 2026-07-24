@@ -399,11 +399,34 @@ export function RecycleVoucherImportPage() {
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
                               {relocatingId === b.id ? (
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap' }}>
-                                  <ThaiMonthPicker
-                                    value={targetRelocateMonth || b.period_month}
-                                    onChange={val => setTargetRelocateMonth(val)}
-                                    alignRight={true}
-                                  />
+                                  <select
+                                    className="form-select form-select-sm"
+                                    style={{ width: 'auto', minWidth: 160, fontWeight: 'bold', background: '#ffffff', borderColor: '#3b82f6' }}
+                                    value={targetRelocateMonth ? `${targetRelocateMonth.slice(0, 7)}-01` : b.period_month}
+                                    onChange={e => setTargetRelocateMonth(e.target.value)}
+                                  >
+                                    {[
+                                      { m: '01', name: 'มกราคม' },
+                                      { m: '02', name: 'กุมภาพันธ์' },
+                                      { m: '03', name: 'มีนาคม' },
+                                      { m: '04', name: 'เมษายน' },
+                                      { m: '05', name: 'พฤษภาคม' },
+                                      { m: '06', name: 'มิถุนายน' },
+                                      { m: '07', name: 'กรกฎาคม' },
+                                      { m: '08', name: 'สิงหาคม' },
+                                      { m: '09', name: 'กันยายน' },
+                                      { m: '10', name: 'ตุลาคม' },
+                                      { m: '11', name: 'พฤศจิกายน' },
+                                      { m: '12', name: 'ธันวาคม' },
+                                    ].map(item => {
+                                      const val = `2026-${item.m}-01`;
+                                      return (
+                                        <option key={val} value={val}>
+                                          📅 {item.name} 2569
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
                                   <button
                                     className="btn btn-sm btn-primary"
                                     onClick={() => handleRelocateBatch(b.id, targetRelocateMonth || b.period_month)}
