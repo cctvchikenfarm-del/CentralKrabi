@@ -398,20 +398,23 @@ export function RecycleVoucherImportPage() {
                           {b.status === 'committed' && (
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
                               {relocatingId === b.id ? (
-                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap' }}>
                                   <ThaiMonthPicker
                                     value={targetRelocateMonth || b.period_month}
                                     onChange={val => setTargetRelocateMonth(val)}
+                                    alignRight={true}
                                   />
                                   <button
                                     className="btn btn-sm btn-primary"
                                     onClick={() => handleRelocateBatch(b.id, targetRelocateMonth || b.period_month)}
+                                    style={{ whiteSpace: 'nowrap' }}
                                   >
                                     บันทึกย้าย
                                   </button>
                                   <button
                                     className="btn btn-sm btn-ghost"
                                     onClick={() => setRelocatingId(null)}
+                                    style={{ whiteSpace: 'nowrap' }}
                                   >
                                     ยกเลิก
                                   </button>

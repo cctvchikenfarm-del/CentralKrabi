@@ -5,7 +5,7 @@ import { THAI_MONTHS_FULL } from '../../lib/periods.js'
  * Custom Thai Month & Year Picker Component
  * Displays Thai Month names (มกราคม - ธันวาคม) and Thai BE Years (พ.ศ. 2569)
  */
-export default function ThaiMonthPicker({ value, onChange, label, style }) {
+export default function ThaiMonthPicker({ value, onChange, label, style, alignRight = false }) {
   const currentADYear = new Date().getFullYear()
 
   // Parse YYYY-MM
@@ -49,7 +49,7 @@ export default function ThaiMonthPicker({ value, onChange, label, style }) {
         className="form-input flex-between"
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          minWidth: 200,
+          minWidth: 180,
           background: '#ffffff',
           cursor: 'pointer',
           padding: 'var(--space-2) var(--space-3)',
@@ -67,21 +67,22 @@ export default function ThaiMonthPicker({ value, onChange, label, style }) {
       {isOpen && (
         <>
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
             onClick={() => setIsOpen(false)}
           />
           <div
             style={{
               position: 'absolute',
               top: '100%',
-              left: 0,
+              left: alignRight ? 'auto' : 0,
+              right: alignRight ? 0 : 'auto',
               marginTop: 6,
-              zIndex: 1000,
+              zIndex: 9999,
               width: 320,
               background: '#ffffff',
               border: '1px solid var(--border-default)',
               borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-lg)',
+              boxShadow: 'var(--shadow-xl)',
               padding: 'var(--space-4)',
             }}
           >
