@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Render.com Deployment Blueprint (Infrastructure as Code)
+# Project: CKAP v4 — Unified Auth & Greenfield Rebuild
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+  # ── 1. Backend Service (Node.js Express Web Service) ──────────────────────
+  - type: web
+    name: ckap-v4-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://ckap-v4-frontend.onrender.com
+
+  # ── 2. Frontend Web App (Vite React Static Site SPA) ───────────────────────
+  - type: static
+    name: ckap-v4-frontend
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE
+        value: https://ckap-v4-backend.onrender.com/api
