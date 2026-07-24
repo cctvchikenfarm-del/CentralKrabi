@@ -31,6 +31,59 @@ router.get('/reports/preview', requirePermission('reports.preview'), async (req,
   } catch (err) { next(err); }
 });
 
+const { generateExcelReport } = require('../services/excel-exporter');
+
+// GET /api/reports/excel — generates and streams .xlsx file (Query param: period_month, module)
+router.get('/reports/excel', requirePermission('reports.export'), async (req, res, next) => {
+  try {
+    const period_month = req.query.period_month || currentPeriodMonth();
+    const moduleFilter = req.query.module;
+
+    let query = supabase.from('data_entries').select('*').order('entry_date', { ascending: true });
+    if (period_month && period_month !== 'all') {
+      query = query.eq('period_month', period_month);
+    }
+    if (moduleFilter && moduleFilter !== 'all') {
+      query = query.eq('module', moduleFilter);
+    }
+
+    const { data: entries, error } = await query;
+    if (error) throw error;
+
+    const buffer = await generateExcelReport({ period_month, entries: entries || [] });
+
+    const filename = `CKAP_Excel_Report_${period_month || 'All'}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+  } catch (err) { next(err); }
+});
+
+// POST /api/reports/excel — generates and streams .xlsx file via POST body
+router.post('/reports/excel', requirePermission('reports.export'), async (req, res, next) => {
+  try {
+    const { period_month = currentPeriodMonth(), module: moduleFilter } = req.body;
+
+    let query = supabase.from('data_entries').select('*').order('entry_date', { ascending: true });
+    if (period_month && period_month !== 'all') {
+      query = query.eq('period_month', period_month);
+    }
+    if (moduleFilter && moduleFilter !== 'all') {
+      query = query.eq('module', moduleFilter);
+    }
+
+    const { data: entries, error } = await query;
+    if (error) throw error;
+
+    const buffer = await generateExcelReport({ period_month, entries: entries || [] });
+
+    const filename = `CKAP_Excel_Report_${period_month || 'All'}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+  } catch (err) { next(err); }
+});
+
 // POST /api/reports/powerpoint — generates and streams .pptx binary
 router.post('/reports/powerpoint', requirePermission('reports.export'), async (req, res, next) => {
   try {

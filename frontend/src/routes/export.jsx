@@ -71,11 +71,44 @@ export function ExportPage() {
     }
   }
 
+  const [downloadingExcel, setDownloadingExcel] = useState(false)
+
+  // Handle Excel (.xlsx) file download
+  async function handleDownloadExcel() {
+    setDownloadingExcel(true)
+    try {
+      const response = await fetch(`/api/reports/excel?period_month=${period}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('ไม่สามารถสร้างรายงาน Excel ได้')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `CKAP_Excel_Report_${period}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      alert(`ข้อผิดพลาดในการดาวน์โหลด Excel: ${err.message}`)
+    } finally {
+      setDownloadingExcel(false)
+    }
+  }
+
   return (
     <>
       <PageHeader
-        title="ส่งออกรายงาน PowerPoint (.pptx)"
-        subtitle={`สร้างสไลด์นำเสนอระดับผู้บริหารอัตโนมัติประจำเดือน ${thaiMonthLabel(period)}`}
+        title="ส่งออกรายงาน PowerPoint (.pptx) & Excel (.xlsx)"
+        subtitle={`สร้างสไลด์นำเสนอและชุดข้อมูลวิเคราะห์ประจำเดือน ${thaiMonthLabel(period)}`}
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <ThaiMonthPicker
@@ -88,6 +121,22 @@ export function ExportPage() {
             />
             <button
               type="button"
+              className="btn btn-lg"
+              style={{ background: '#16a34a', color: '#ffffff', border: 'none', fontWeight: 'bold' }}
+              onClick={handleDownloadExcel}
+              disabled={downloadingExcel}
+            >
+              {downloadingExcel ? (
+                <>
+                  <span className="spinner spinner-sm" style={{ marginRight: 8 }} />
+                  กำลังสร้างไฟล์ Excel...
+                </>
+              ) : (
+                '📗 ดาวน์โหลด Excel (.xlsx)'
+              )}
+            </button>
+            <button
+              type="button"
               className="btn btn-primary btn-lg"
               onClick={handleDownloadPowerPoint}
               disabled={downloading}
@@ -98,7 +147,7 @@ export function ExportPage() {
                   กำลังสร้างไฟล์ PowerPoint...
                 </>
               ) : (
-                '📊 ดาวน์โหลดรายงาน PowerPoint (.pptx)'
+                '📊 ดาวน์โหลด PowerPoint (.pptx)'
               )}
             </button>
           </div>
@@ -108,7 +157,7 @@ export function ExportPage() {
       <div className="page-content">
         {/* Banner */}
         <div className="alert alert-info mb-6" style={{ background: '#f0f9ff', borderColor: '#bae6fd', color: '#0369a1' }}>
-          ℹ️ <strong>ระบบส่งออกสไลด์นำเสนอ PowerPoint อัตโนมัติ:</strong> ไฟล์ `.pptx` ที่สร้างขึ้นได้รับการจัดองค์ประกอบ ข้อความ กราฟ และตาราง ในรูปแบบความละเอียดสูง สามารถนำไปเปิดพรีเซนต์กับคณะผู้บริหารได้ทันที 100%
+          ℹ️ <strong>ระบบส่งออกรายงาน PowerPoint (.pptx) และ Excel (.xlsx):</strong> ท่านสามารถดาวน์โหลดไฟล์ Excel เพื่อนำข้อมูลดิบไปกรอง สร้าง Pivot Table และวิเคราะห์กราฟต่อใน Microsoft Excel หรือ Power BI ได้ทันที
         </div>
 
         {isLoading ? (
