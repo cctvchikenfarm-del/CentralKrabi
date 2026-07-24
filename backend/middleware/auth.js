@@ -1,11 +1,11 @@
 const { supabase, authSupabase } = require('../services/supabase');
 
 /**
- * Resolves the authenticated user from the HTTP-only access token cookie.
+ * Resolves the authenticated user from the HTTP-only access token cookie or Authorization Bearer header.
  * Returns { id, email, display_name, role, permissions[] } or throws.
  */
 async function resolveUser(req) {
-  const token = req.cookies?.access_token;
+  const token = req.cookies?.access_token || req.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) throw Object.assign(new Error('ไม่ได้เข้าสู่ระบบ'), { status: 401 });
 
   // Verify token with Supabase Auth
@@ -84,10 +84,11 @@ function requireOwner(req, res, next) {
 /**
  * Auth cookie helpers.
  */
+const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
   path: '/',
 };
 

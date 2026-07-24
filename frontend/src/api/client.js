@@ -13,13 +13,19 @@ class ApiError extends Error {
 }
 
 async function request(path, options = {}) {
+  const token = localStorage.getItem('access_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  if (token && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${BASE}${path}`, {
     ...options,
     credentials: 'include', // always send cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 

@@ -15,7 +15,10 @@ export function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: () => auth.login(email, password),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      if (res?.access_token) {
+        localStorage.setItem('access_token', res.access_token)
+      }
       qc.invalidateQueries({ queryKey: ['me'] })
       window.location.href = '/dashboard'
     },

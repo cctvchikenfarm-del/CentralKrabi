@@ -22,6 +22,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: auth.logout,
     onSuccess: () => {
+      localStorage.removeItem('access_token')
       qc.clear()
       window.location.href = '/login'
     },

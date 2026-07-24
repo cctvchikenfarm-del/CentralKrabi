@@ -69,6 +69,7 @@ router.post('/login', loginLimiter, async (req, res, next) => {
         display_name: profile.display_name,
         role: profile.role,
       },
+      access_token: data.session.access_token,
     });
   } catch (err) {
     next(err);
