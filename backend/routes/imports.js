@@ -312,7 +312,6 @@ router.post('/imports/batches/:id/relocate', requirePermission('entries.import')
       .update({
         period_month: newEntryDate,
         entry_date: newEntryDate,
-        updated_at: new Date().toISOString(),
       })
       .eq('import_batch_id', batchId);
 
@@ -323,7 +322,6 @@ router.post('/imports/batches/:id/relocate', requirePermission('entries.import')
       .from('import_batches')
       .update({
         period_month: newPeriod,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', batchId);
 
