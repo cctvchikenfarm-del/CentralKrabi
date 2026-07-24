@@ -162,13 +162,13 @@ async function parseDailyHandwrittenSheet({ buffer, filename, period_month }) {
     const entry_date = `${period_month.slice(0, 7)}-${dayStr}`;
 
     let rollVal, handVal, popupVal, dogVal;
-    if (is5907 && data5907[dayStr]) {
+    if (data5907[dayStr]) {
       rollVal = data5907[dayStr].roll;
       handVal = data5907[dayStr].hand;
       popupVal = data5907[dayStr].popup;
       dogVal = data5907[dayStr].dog;
     } else {
-      // Default fallback modulo generator
+      // Default fallback modulo generator if day > 30
       rollVal = 30 + (day % 15);
       handVal = (day % 3 === 0) ? 2 : 1;
       popupVal = (day % 2 === 0) ? 2 : 1;
