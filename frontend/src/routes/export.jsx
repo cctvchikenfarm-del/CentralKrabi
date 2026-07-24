@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { reports } from '../api/index.js'
+import { api } from '../api/client.js'
 import { useAuth } from '../hooks/useAuth.js'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import { currentPeriodMonth, thaiMonthLabel } from '../lib/periods.js'
@@ -45,14 +46,17 @@ export function ExportPage() {
     try {
       const response = await fetch('/api/reports/powerpoint', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
         },
         body: JSON.stringify({ period_month: period }),
       })
 
       if (!response.ok) {
-        throw new Error('ไม่สามารถสร้างรายงาน PowerPoint ได้')
+        const errJson = await response.json().catch(() => ({}))
+        throw new Error(errJson.error || 'ไม่สามารถสร้างรายงาน PowerPoint ได้')
       }
 
       const blob = await response.blob()
@@ -77,18 +81,7 @@ export function ExportPage() {
   async function handleDownloadExcel() {
     setDownloadingExcel(true)
     try {
-      const response = await fetch(`/api/reports/excel?period_month=${period}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('ไม่สามารถสร้างรายงาน Excel ได้')
-      }
-
-      const blob = await response.blob()
+      const blob = await api.download('/reports/excel', { period_month: period })
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url

@@ -60,6 +60,22 @@ export const api = {
   post:   (path, body)   => request(path, { method: 'POST',   body }),
   put:    (path, body)   => request(path, { method: 'PUT',    body }),
   delete: (path)         => request(path, { method: 'DELETE' }),
+  download: async (path, params) => {
+    const token = localStorage.getItem('access_token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const url = params ? `${path}?${new URLSearchParams(params)}` : path;
+    const res = await fetch(`${BASE}${url}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers,
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new ApiError(errJson.error || `HTTP ${res.status}`, res.status);
+    }
+    return res.blob();
+  },
 };
 
 export { ApiError };
