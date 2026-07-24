@@ -37,13 +37,40 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        {/* Logo */}
-        <div className="login-logo">
-          <div className="login-logo-mark">CK</div>
-          <div className="login-logo-text">
-            <div className="login-logo-title">CKAP</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              ศูนย์คัดแยกขยะกระบี่
+        {/* Logo Header */}
+        <div className="login-logo" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 'var(--radius-lg)',
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              border: '2px solid #d4af37',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 3,
+              boxShadow: '0 6px 20px rgba(212, 175, 55, 0.3)',
+              flexShrink: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              src="/central-krabi-logo.png"
+              alt="Central Krabi Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.style.display = 'none'
+                if (e.target.parentNode) e.target.parentNode.innerText = 'CK'
+              }}
+            />
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '18px', color: '#0f172a', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+              CENTRAL <span style={{ background: 'linear-gradient(135deg, #AA7C11 0%, #D4AF37 50%, #B8924B 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 900 }}>KRABI</span>
+            </div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: 600 }}>
+              ศูนย์คัดแยกขยะกระบี่ (CKAP v4)
             </div>
           </div>
         </div>

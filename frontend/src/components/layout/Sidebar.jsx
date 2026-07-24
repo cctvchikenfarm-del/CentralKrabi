@@ -54,12 +54,42 @@ export default function Sidebar({ user }) {
 
   return (
     <aside className="sidebar" id="sidebar">
-      {/* Logo */}
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-mark" style={{ background: currentTheme === 'theme-central-gold' ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : undefined, border: currentTheme === 'theme-central-gold' ? '1.5px solid #d4af37' : undefined }}>CK</div>
+      {/* Logo Header */}
+      <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4)' }}>
+        <div
+          className="sidebar-logo-mark"
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            border: '1.5px solid #d4af37',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 2,
+            boxShadow: '0 4px 14px rgba(212, 175, 55, 0.25)',
+            flexShrink: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <img
+            src="/central-krabi-logo.png"
+            alt="Central Krabi Logo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            onError={(e) => {
+              e.target.style.display = 'none'
+              if (e.target.parentNode) e.target.parentNode.innerText = 'CK'
+            }}
+          />
+        </div>
         <div className="sidebar-logo-text">
-          <div className="sidebar-logo-title">CKAP v4</div>
-          <div className="sidebar-logo-sub">ศูนย์คัดแยกกระบี่</div>
+          <div className="sidebar-logo-title" style={{ fontWeight: 800, fontSize: '15px', color: '#ffffff', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+            CENTRAL <span style={{ background: 'linear-gradient(135deg, #AA7C11 0%, #D4AF37 50%, #F3E7C4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 900 }}>KRABI</span>
+          </div>
+          <div className="sidebar-logo-sub" style={{ fontSize: '11px', color: 'var(--gray-400)', fontWeight: 600, marginTop: 2 }}>
+            CKAP v4 | ศูนย์คัดแยกกระบี่
+          </div>
         </div>
       </div>
 
