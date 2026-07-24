@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { useLogout } from '../../hooks/useAuth.js'
 
@@ -32,6 +33,15 @@ export default function Sidebar({ user }) {
   const location = useLocation()
   const logout = useLogout()
 
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return localStorage.getItem('app-theme') || 'theme-central-gold'
+  })
+
+  useEffect(() => {
+    document.body.className = currentTheme
+    localStorage.setItem('app-theme', currentTheme)
+  }, [currentTheme])
+
   function isActive(to) {
     return location.pathname === to || location.pathname.startsWith(to + '/')
   }
@@ -46,7 +56,7 @@ export default function Sidebar({ user }) {
     <aside className="sidebar" id="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="sidebar-logo-mark">CK</div>
+        <div className="sidebar-logo-mark" style={{ background: currentTheme === 'theme-central-gold' ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' : undefined, border: currentTheme === 'theme-central-gold' ? '1.5px solid #d4af37' : undefined }}>CK</div>
         <div className="sidebar-logo-text">
           <div className="sidebar-logo-title">CKAP v4</div>
           <div className="sidebar-logo-sub">ศูนย์คัดแยกกระบี่</div>
@@ -78,8 +88,33 @@ export default function Sidebar({ user }) {
         })}
       </nav>
 
-      {/* Footer — user info + logout */}
+      {/* Footer — Theme selector + user info + logout */}
       <div className="sidebar-footer">
+        <div style={{ padding: 'var(--space-2) var(--space-3)', marginBottom: 'var(--space-2)' }}>
+          <label style={{ fontSize: '10px', color: 'var(--gray-400)', fontWeight: 'bold', display: 'block', marginBottom: 4 }}>
+            🎨 เลือกธีมระบบ
+          </label>
+          <select
+            value={currentTheme}
+            onChange={e => setCurrentTheme(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '4px 8px',
+              fontSize: '11px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgb(255 255 255 / 0.1)',
+              color: '#ffffff',
+              border: '1px solid rgb(255 255 255 / 0.2)',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="theme-central-gold" style={{ color: '#000' }}>👑 Central Gold (สีทองสแคลด์)</option>
+            <option value="theme-gold-mint" style={{ color: '#000' }}>🌿 Gold Mint (มิ้นท์ทอง)</option>
+            <option value="theme-krabi-coastal" style={{ color: '#000' }}>🌊 Krabi Coastal (ฟ้าครามกระบี่)</option>
+            <option value="theme-andaman-prism" style={{ color: '#000' }}>🔮 Andaman Prism (ม่วงอันดามัน)</option>
+          </select>
+        </div>
+
         {user && (
           <div
             style={{

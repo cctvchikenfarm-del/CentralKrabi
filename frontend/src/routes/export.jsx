@@ -6,6 +6,8 @@ import { useAuth } from '../hooks/useAuth.js'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import { currentPeriodMonth, thaiMonthLabel } from '../lib/periods.js'
 
+import ThaiMonthPicker from '../components/common/ThaiMonthPicker.jsx'
+
 export const Route = createFileRoute('/export')({
   component: ExportPage,
 })
@@ -76,26 +78,13 @@ export function ExportPage() {
         subtitle={`สร้างสไลด์นำเสนอระดับผู้บริหารอัตโนมัติประจำเดือน ${thaiMonthLabel(period)}`}
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <select
-              className="form-select"
-              style={{ width: 'auto' }}
-              value={selectedYear}
-              onChange={e => {
-                const y = Number(e.target.value)
-                setSelectedYear(y)
-                setPeriod(`${y}-01-01`)
+            <ThaiMonthPicker
+              value={period}
+              onChange={val => {
+                setPeriod(val)
+                const y = Number(val.split('-')[0])
+                if (!isNaN(y)) setSelectedYear(y)
               }}
-            >
-              {yearOptions.map(y => (
-                <option key={y} value={y}>ปี พ.ศ. {y + 543} ({y})</option>
-              ))}
-            </select>
-            <input
-              type="month"
-              className="form-input"
-              style={{ width: 'auto' }}
-              value={period.slice(0, 7)}
-              onChange={e => e.target.value && setPeriod(`${e.target.value}-01`)}
             />
             <button
               type="button"

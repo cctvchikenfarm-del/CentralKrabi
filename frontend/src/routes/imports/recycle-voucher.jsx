@@ -4,6 +4,8 @@ import { imports } from '../../api/index.js'
 import PageHeader from '../../components/layout/PageHeader.jsx'
 import { currentPeriodMonth, thaiMonthLabel } from '../../lib/periods.js'
 
+import ThaiMonthPicker from '../../components/common/ThaiMonthPicker.jsx'
+
 export const Route = createFileRoute('/imports/recycle-voucher')({
   component: RecycleVoucherImportPage,
 })
@@ -119,13 +121,10 @@ export function RecycleVoucherImportPage() {
           <div className="card-body">
             <div className="flex-between" style={{ gap: 'var(--space-4)', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <label className="form-label mb-0">เดือนรายงาน:</label>
-                <input
-                  type="month"
-                  className="form-input"
-                  style={{ width: 'auto' }}
-                  value={period.slice(0, 7)}
-                  onChange={e => e.target.value && setPeriod(`${e.target.value}-01`)}
+                <ThaiMonthPicker
+                  label="เดือนรายงาน:"
+                  value={period}
+                  onChange={val => setPeriod(val)}
                 />
               </div>
 

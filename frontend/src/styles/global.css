@@ -142,6 +142,55 @@ a { color: inherit; text-decoration: none; }
   --z-toast:    300;
 }
 
+/* ── Original System Themes from v3 ───────────────────────────────────────── */
+body.theme-central-gold, .theme-central-gold {
+  --color-primary: #b8924b; /* Ochre Gold */
+  --color-primary-hover: #9c793a;
+  --color-primary-light: #f5eedc; /* Warm Sand/Cream */
+  --color-primary-ring: #b8924b;
+  --surface-page: linear-gradient(135deg, #faf8f5 0%, #f5eedc 55%, #eae0c8 100%);
+  --surface-sidebar: #1c1917;
+  --blue-50: #fefce8;
+  --blue-600: #b8924b;
+  --blue-700: #9c793a;
+}
+
+body.theme-gold-mint, .theme-gold-mint {
+  --color-primary: #0f766e; /* Deep Mint */
+  --color-primary-hover: #115e59;
+  --color-primary-light: #ccfbf1;
+  --color-primary-ring: #14b8a6;
+  --surface-page: linear-gradient(135deg, #f0fdf4 0%, #f0fdfa 55%, #fef3c7 100%);
+  --surface-sidebar: #0f2924;
+  --blue-50: #e6fffa;
+  --blue-600: #0f766e;
+  --blue-700: #115e59;
+}
+
+body.theme-krabi-coastal, .theme-krabi-coastal {
+  --color-primary: #0369a1;
+  --color-primary-hover: #075985;
+  --color-primary-light: #dff7f3;
+  --color-primary-ring: #10b981;
+  --surface-page: linear-gradient(135deg, #effaff 0%, #ecfdf5 52%, #fff1f2 100%);
+  --surface-sidebar: #0f172a;
+  --blue-50: #eff6ff;
+  --blue-600: #0369a1;
+  --blue-700: #075985;
+}
+
+body.theme-andaman-prism, .theme-andaman-prism {
+  --color-primary: #4338ca;
+  --color-primary-hover: #3730a3;
+  --color-primary-light: #f3e8ff;
+  --color-primary-ring: #ec4899;
+  --surface-page: linear-gradient(135deg, #eef2ff 0%, #ecfdf5 48%, #fdf2f8 100%);
+  --surface-sidebar: #1e1b4b;
+  --blue-50: #f3e8ff;
+  --blue-600: #4338ca;
+  --blue-700: #3730a3;
+}
+
 /* ── Base ────────────────────────────────────────────────────────────────── */
 body {
   font-family: var(--font-sans);

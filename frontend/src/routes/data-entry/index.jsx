@@ -8,6 +8,8 @@ import PageHeader from '../../components/layout/PageHeader.jsx'
 import { currentPeriodMonth, todayBangkok, thaiMonthLabel, daysInPeriodMonth } from '../../lib/periods.js'
 import { MODULE_ORDER, MODULE_LABELS, canonicalUnit } from '../../lib/modules.js'
 
+import ThaiMonthPicker from '../../components/common/ThaiMonthPicker.jsx'
+
 export const Route = createFileRoute('/data-entry')({
   component: DataEntryPage,
 })
@@ -57,12 +59,9 @@ export function DataEntryPage() {
         subtitle={thaiMonthLabel(period)}
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <input
-              type="month"
-              className="form-input"
-              style={{ width: 'auto' }}
-              value={period.slice(0, 7)}
-              onChange={e => e.target.value && setPeriod(`${e.target.value}-01`)}
+            <ThaiMonthPicker
+              value={period}
+              onChange={val => setPeriod(val)}
             />
           </div>
         }
