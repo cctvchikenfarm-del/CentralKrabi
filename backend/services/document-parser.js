@@ -99,7 +99,7 @@ const RECYCLE_CATEGORY_MAP = [
   { keys: ['กระดาษจับจั้ว', 'จับจั้ว'], code: 'rc_jap_jua', name_th: 'กระดาษจับจั้ว' },
   { keys: ['สังกะสีกระป๋อง', 'สังกะสี'], code: 'rc_tin_can', code2nd: 'rc_tin_can_2nd', name_th: 'สังกะสีกระป๋อง' },
   { keys: ['pet', 'ขวด pet'], code: 'rc_pet', name_th: 'PET' },
-  { keys: ['พลาสติกรวม', 'พลาสติก'], code: 'rc_plastic_mixed', code2nd: 'rc_plastic_mixed_2nd', name_th: 'พลาสติกรวม' },
+  { keys: ['พลาสติกรวม', 'พลาสติก', 'hdpe', 'แกนลอน', 'แกลลอน'], code: 'rc_plastic_mixed', code2nd: 'rc_plastic_mixed_2nd', name_th: 'พลาสติกรวม' },
   { keys: ['อลู-โค๊ก', 'อลูโค๊ก', 'โค๊ก', 'อลูมิเนียม'], code: 'rc_alu_coke', name_th: 'อลู-โค๊ก' },
   { keys: ['แก้ว-รวมสี', 'แก้วรวมสี', 'แก้วรวม', 'รวมสี'], code: 'rc_glass_mixed', name_th: 'แก้ว-รวมสี' },
 ];
@@ -287,11 +287,12 @@ async function parseRecycleVoucher({ buffer, filename, period_month, isPdf }) {
     }
 
     // Extract items dynamically: <name> จานวน/จำนวน <weight> ก.ก. ราคา <price> บาท/ก.ก. <amount>
-    const itemRegex = /([ก-๙a-zA-Z\s]+)\s+จา?นวน\s*([\d,]+\.?\d*)\s*ก\.?ก\.?\s*ราคา\s*([\d,]+\.?\d*)\s*บาท\/ก\.?ก\.?\s*([\d,]+\.?\d*)/g;
+    const itemRegex = /([ก-๙a-zA-Z\s()\-.]+)\s+จา?นวน\s*([\d,]+\.?\d*)\s*ก\.?ก\.?\s*ราคา\s*([\d,]+\.?\d*)\s*บาท\/ก\.?ก\.?\s*([\d,]+\.?\d*)/g;
     let match;
     while ((match = itemRegex.exec(rawText)) !== null) {
+      const nameClean = match[1].replace(/\s+/g, ' ').replace(/.*(รายการ|จานวนเงิน\s*\(บาท\)|รหัสบัญชี)\s*/gi, '').trim();
       rawVoucherRows.push({
-        name: match[1].replace(/\s+/g, ' ').trim(),
+        name: nameClean,
         weight: parseFloat(match[2].replace(/,/g, '')),
         price: parseFloat(match[3].replace(/,/g, '')),
         amount: parseFloat(match[4].replace(/,/g, '')),
@@ -339,13 +340,14 @@ async function parseRecycleVoucher({ buffer, filename, period_month, isPdf }) {
 
     // Check category map
     let catRule = RECYCLE_CATEGORY_MAP.find(c => c.keys.some(k => nameClean.toLowerCase().includes(k.toLowerCase())));
-    let category_code = catRule ? catRule.code : 'rc_brown_paper';
+    let baseCode = catRule ? catRule.code : 'rc_brown_paper';
+    let category_code = baseCode;
 
-    // Handle 2nd tier price for duplicates (e.g. 2nd row of พลาสติกรวม or สังกะสีกระป๋อง)
-    if (!categorySeenCount[nameClean]) {
-      categorySeenCount[nameClean] = 1;
+    // Handle 2nd tier price for duplicates (e.g. 2nd row of พลาสติกรวม or HDPE)
+    if (!categorySeenCount[baseCode]) {
+      categorySeenCount[baseCode] = 1;
     } else {
-      categorySeenCount[nameClean]++;
+      categorySeenCount[baseCode]++;
       if (catRule && catRule.code2nd) {
         category_code = catRule.code2nd;
       }
