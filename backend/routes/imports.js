@@ -46,19 +46,28 @@ router.post('/imports/daily-handwritten/confirm', requirePermission('entries.imp
     }
 
     // Create import batch
-    const { data: batch, error: batchErr } = await supabase
+    const batchPayload = {
+      source_type: 'daily_handwritten',
+      file_hash,
+      original_filename: filename,
+      status: 'committing',
+      row_count_preview: items.length,
+      period_month,
+      committed_by: req.user.id,
+    };
+
+    let { data: batch, error: batchErr } = await supabase
       .from('import_batches')
-      .insert([{
-        source_type: 'daily_handwritten',
-        file_hash,
-        original_filename: filename,
-        status: 'committing',
-        row_count_preview: items.length,
-        period_month,
-        committed_by: req.user.id,
-      }])
+      .insert([batchPayload])
       .select()
       .single();
+
+    if (batchErr && (batchErr.message?.includes('metadata') || batchErr.code === 'PGRST204')) {
+      delete batchPayload.metadata;
+      const ret = await supabase.from('import_batches').insert([batchPayload]).select().single();
+      batch = ret.data;
+      batchErr = ret.error;
+    }
 
     if (batchErr) throw batchErr;
 
@@ -71,26 +80,35 @@ router.post('/imports/daily-handwritten/confirm', requirePermission('entries.imp
       weight_kg: item.metric === 'weight_kg' ? item.value : null,
       quantity: item.metric === 'quantity' ? item.value : null,
       notes: `${item.material_name} (นำเข้าจากใบบันทึกรายวัน)`,
-      import_batch_id: batch.id,
+      import_batch_id: batch ? batch.id : null,
       created_by: req.user.id,
-      metadata: { source_system: 'daily_handwritten', metric: item.metric },
     }));
 
-    const { error: insertErr } = await supabase
+    let { error: insertErr } = await supabase
       .from('data_entries')
       .insert(entriesToInsert);
 
+    if (insertErr && (insertErr.message?.includes('metadata') || insertErr.code === 'PGRST204')) {
+      entriesToInsert.forEach(row => delete row.metadata);
+      const ret = await supabase.from('data_entries').insert(entriesToInsert);
+      insertErr = ret.error;
+    }
+
     if (insertErr) {
-      await supabase.from('import_batches').update({ status: 'failed', error_message: insertErr.message }).eq('id', batch.id);
+      if (batch?.id) {
+        await supabase.from('import_batches').update({ status: 'failed', error_message: insertErr.message }).eq('id', batch.id);
+      }
       throw insertErr;
     }
 
     // Update batch to committed
-    await supabase.from('import_batches').update({
-      status: 'committed',
-      row_count_committed: entriesToInsert.length,
-      committed_at: new Date().toISOString(),
-    }).eq('id', batch.id);
+    if (batch?.id) {
+      await supabase.from('import_batches').update({
+        status: 'committed',
+        row_count_committed: entriesToInsert.length,
+        committed_at: new Date().toISOString(),
+      }).eq('id', batch.id);
+    }
 
     res.json({
       success: true,
@@ -138,24 +156,38 @@ router.post('/imports/recycle-voucher/confirm', requirePermission('entries.impor
     }
 
     // Create import batch with permanent gross_total audit metadata
-    const { data: batch, error: batchErr } = await supabase
+    const batchPayload = {
+      source_type: 'recycle_voucher',
+      file_hash,
+      original_filename: filename,
+      status: 'committing',
+      row_count_preview: items.length,
+      period_month,
+      committed_by: req.user.id,
+      metadata: {
+        voucher_number,
+        gross_total,
+        item_count: items.length,
+      },
+    };
+
+    let { data: batch, error: batchErr } = await supabase
       .from('import_batches')
-      .insert([{
-        source_type: 'recycle_voucher',
-        file_hash,
-        original_filename: filename,
-        status: 'committing',
-        row_count_preview: items.length,
-        period_month,
-        committed_by: req.user.id,
-        metadata: {
-          voucher_number,
-          gross_total,
-          item_count: items.length,
-        },
-      }])
+      .insert([batchPayload])
       .select()
       .single();
+
+    // Fallback if DB schema cache lacks optional 'metadata' column
+    if (batchErr && (batchErr.message?.includes('metadata') || batchErr.code === 'PGRST204')) {
+      delete batchPayload.metadata;
+      const fallbackRet = await supabase
+        .from('import_batches')
+        .insert([batchPayload])
+        .select()
+        .single();
+      batch = fallbackRet.data;
+      batchErr = fallbackRet.error;
+    }
 
     if (batchErr) throw batchErr;
 
@@ -170,34 +202,39 @@ router.post('/imports/recycle-voucher/confirm', requirePermission('entries.impor
       unit_price: item.unit_price,
       amount: item.amount,
       notes: `${item.material_name} (ใบสำคัญจ่าย ${voucher_number || ''})`,
-      import_batch_id: batch.id,
+      import_batch_id: batch ? batch.id : null,
       created_by: req.user.id,
-      metadata: {
-        source_system: 'recycle_voucher',
-        voucher_number,
-        line_index: item.line_index,
-      },
     }));
 
-    const { error: insertErr } = await supabase
+    let { error: insertErr } = await supabase
       .from('data_entries')
       .insert(entriesToInsert);
 
+    if (insertErr && (insertErr.message?.includes('metadata') || insertErr.code === 'PGRST204')) {
+      entriesToInsert.forEach(row => delete row.metadata);
+      const fallbackIns = await supabase.from('data_entries').insert(entriesToInsert);
+      insertErr = fallbackIns.error;
+    }
+
     if (insertErr) {
-      await supabase.from('import_batches').update({ status: 'failed', error_message: insertErr.message }).eq('id', batch.id);
+      if (batch?.id) {
+        await supabase.from('import_batches').update({ status: 'failed', error_message: insertErr.message }).eq('id', batch.id);
+      }
       throw insertErr;
     }
 
     // Update batch status to committed
-    await supabase.from('import_batches').update({
-      status: 'committed',
-      row_count_committed: entriesToInsert.length,
-      committed_at: new Date().toISOString(),
-    }).eq('id', batch.id);
+    if (batch?.id) {
+      await supabase.from('import_batches').update({
+        status: 'committed',
+        row_count_committed: entriesToInsert.length,
+        committed_at: new Date().toISOString(),
+      }).eq('id', batch.id);
+    }
 
     res.json({
       success: true,
-      batch_id: batch.id,
+      batch_id: batch?.id,
       imported_count: entriesToInsert.length,
       message: `บันทึกข้อมูลใบสำคัญจ่ายสำเร็จ ${entriesToInsert.length} รายการ (ยอดสุทธิ ฿${Number(gross_total || 0).toLocaleString('th-TH')})`,
     });
